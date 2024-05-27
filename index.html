@@ -1,0 +1,71 @@
+<!-- public/index.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List</title>
+    <style>
+        /* Add your CSS styles here */
+    </style>
+</head>
+<body>
+    <h1>To-Do List</h1>
+    
+    <form id="taskForm">
+        <input type="text" id="taskInput" placeholder="Enter task...">
+        <button type="submit">Add Task</button>
+    </form>
+    
+    <ul id="taskList">
+        <!-- Tasks will be dynamically added here -->
+    </ul>
+
+    <script>
+        // Function to fetch tasks from the backend and display them
+        function fetchTasks() {
+            fetch('/api/tasks')
+                .then(response => response.json())
+                .then(tasks => {
+                    const taskList = document.getElementById('taskList');
+                    taskList.innerHTML = ''; // Clear previous tasks
+                    tasks.forEach(task => {
+                        const li = document.createElement('li');
+                        li.textContent = task.name;
+                        taskList.appendChild(li);
+                    });
+                })
+                .catch(error => console.error('Error fetching tasks:', error));
+        }
+
+        // Add event listener to the form for adding new tasks
+        document.getElementById('taskForm').addEventListener('submit', event => {
+            event.preventDefault(); // Prevent form submission
+            const taskInput = document.getElementById('taskInput');
+            const taskName = taskInput.value.trim();
+            if (taskName !== '') {
+                fetch('/api/tasks', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name: taskName })
+                })
+                .then(response => {
+                    if (response.ok) {
+                        taskInput.value = ''; // Clear input field
+                        fetchTasks(); // Fetch and display updated tasks
+                    } else {
+                        console.error('Failed to add task:', response.statusText);
+                    }
+                })
+                .catch(error => console.error('Error adding task:', error));
+            }
+        });
+
+        // Fetch and display tasks when the page loads
+        fetchTasks();
+    </script>
+</body>
+</html>
